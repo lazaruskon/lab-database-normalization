@@ -1,0 +1,151 @@
+// Sakila reimagined
+
+Table film {
+  film_id smallint [pk]
+  title varchar(128)
+  description text
+  release_year year
+  language_id tinyint
+  original_language_id tinyint
+  rental_duration tinyint
+  rental_rat decimal(4,2)
+  length smallint
+  replacement_cost decimal(5,2)
+  rating film_rating_enum
+  special_features SET('Trailers','Commentaries','Deleted Scences','Behind the Scences')
+  last_update timestamp
+  
+}
+
+// merged tables category and film_category
+Table film_category {
+  film_id smallint [pk]
+  category_id tinyint
+  name varchar(45)
+  last_update timestamp
+  
+}
+
+Ref: "film"."film_id" - "film_category"."film_id"
+
+// deleted table film_text since all the info is contained wit table film
+// merged tables actor and film_actor
+Table film_actor {
+  actor_id smallint [pk]
+  film_id smallint [pk]
+  first_name varchar(45)
+  last_name varchar(45)
+  last_update timestamp
+}
+
+Ref: "film_actor"."film_id" - "film"."film_id"
+
+Table language {
+  language_id tinyint pk
+  name char(20)
+  last_update timestamp
+}
+
+Ref: "language"."language_id" < "film"."language_id"
+
+// This is the merged country and city tables
+Table location {
+  city_id smallint pk
+  city varchar(50)
+  country_id smallint
+  country varchar(50)
+  last_update timestamp
+}
+
+
+Table store {
+  store_id tinyint pk
+  manager_staff_id tinyint
+  address_id smallint
+  last_update timestamp
+}
+
+Table address {
+  address_id smallint pk
+  address varchar(50)
+  address2 varchar(50)
+  district varchar(50)
+  city_id smallint
+  postal_code varchar(10)
+  phone varchar(20)
+  last_update timestamp
+}
+
+Ref: "address"."city_id" < "location"."city_id"
+Ref: "store"."address_id" < "address"."address_id"
+
+Table staff {
+  staff_id tinyint pk
+  first_name varchar(45)
+  last_name varchar(45)
+  address_id smallint
+  picture blob
+  email varchar(50)
+  store_id tinyint
+  active boolean
+  username varchar(16)
+  password varchar(40)
+  last_update timestamp
+}
+
+Ref: "staff"."store_id" < "store"."store_id"
+Ref: "staff"."staff_id" > "store"."manager_staff_id"
+Ref: "staff"."address_id" < "address"."address_id"
+
+Table rental {
+  rental_id int pk
+  rental_date datetime
+  inventory_id mediumint
+  customer_id smallint
+  return_date datetime
+  staff_id tinyint
+  last_update timestamp
+}
+
+Ref: "staff"."staff_id" > "rental"."staff_id"
+
+Table customer {
+  customer_id smallint pk
+  store_id tinyint
+  first_name varchar(45)
+  last_name varchar(45)
+  email varchar(50)
+  address_id smallint
+  active boolean
+  create_date datetime
+  last_update timestamp
+}
+
+Ref: "customer"."customer_id" > "rental"."customer_id"
+Ref: "customer"."store_id" < "store"."store_id"
+Ref: "customer"."address_id" < "address"."address_id"
+
+Table inventory {
+  inventory_id mediumint pk
+  film_id smallint
+  store_id tinyint
+  last_update timestamp
+}
+
+Ref: "inventory"."film_id" < "film"."film_id"
+Ref: "inventory"."store_id" < "store"."store_id"
+Ref: "inventory"."inventory_id" > "rental"."inventory_id"
+
+Table payment {
+  payment_id smallint pk
+  customer_id smallint
+  staff_id tinyint
+  rental_id int
+  amount decimals(5,2)
+  payment_date datetime
+  last_update timestamp
+}
+
+Ref: "payment"."customer_id" < "customer"."customer_id"
+Ref: "payment"."staff_id" < "staff"."staff_id"
+Ref: "payment"."rental_id" < "rental"."rental_id"
